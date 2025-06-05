@@ -1,0 +1,61 @@
+# Coarse-grained model composite
+###################################################
+units         lj
+atom_style    full
+dimension     3
+boundary p p s
+timestep 0.005
+
+### Interactions
+
+bond_style      harmonic
+special_bonds   fene
+pair_style      lj/cut 2.5
+
+read_data    film_i.data
+
+### Coefficients
+
+pair_coeff    * * 1.0 1.0
+bond_coeff    * 2500.0 0.9
+
+### Variables
+
+variable Temp equal 0.1
+variable Press equal 0.1
+variable velSeed equal 348371  
+
+#velocity     all create ${Temp} ${velSeed}
+
+### Output
+thermo_style    custom step temp vol density press etotal pe ke epair ebond eangle
+thermo          1000
+
+
+### short equilibration
+
+fix npt1 all npt temp ${Temp} ${Temp} 0.5 x ${Press} ${Press} 5.0 y ${Press} ${Press} 5.0 couple xy
+run             100000
+
+unfix npt1
+
+#tensile test
+
+reset_timestep 0
+fix nvt1 all nvt temp ${Temp} ${Temp} 0.5
+
+variable    engStress equal "-pxx"
+variable    strain equal "step*0.000005"
+
+compute	stressA all stress/atom NULL
+compute	p all reduce sum c_stressA[1] c_stressA[2] c_stressA[3]
+
+fix stressCurve all print 1 "${strain} ${engStress}" file stressCurve.dat screen no
+fix stretch all deform 1 x erate 0.001 units box
+
+dump dumpTens all custom 5000 ConfTens.dat id type xu yu zu c_stressA[1] c_stressA[2] c_stressA[3]
+dump_modify dumpTens sort id
+
+run 400000
+
+write_data endDeform.data

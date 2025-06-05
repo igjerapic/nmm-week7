@@ -1,0 +1,60 @@
+# Coarse-grained model composite
+###################################################
+units         lj
+atom_style    full
+dimension     3
+boundary p p p
+timestep 0.005
+
+### Interactions
+
+bond_style      fene
+special_bonds   fene
+pair_style      lj/cut 2.5
+
+read_data    composite.data
+
+group particle type 1
+group polymer type 2
+
+### Coefficients
+
+pair_coeff    * * 1.0 1.0
+pair_coeff    1 2 5.0 1.0
+
+bond_coeff * 30.0 1.5 1.0 1.0
+
+fix tether particle spring/self 1000
+
+### Variables
+
+variable Temp equal 0.2
+variable Press equal 0.1
+variable velSeed equal 926458  
+
+#velocity     all create ${Temp} ${velSeed}
+
+### Output
+thermo_style    custom step temp vol density press etotal pe ke epair ebond eangle
+thermo          1000
+
+
+### equilibration
+
+fix npt1 all npt temp ${Temp} ${Temp} 0.5 iso ${Press} ${Press} 5.0
+run             100000
+
+#production
+reset_timestep 0
+
+dump dumpLin all custom 2000 productionLin.dat id type xu yu zu vx vy vz
+dump_modify dumpLin sort id
+
+
+variable step equal logfreq(1,9,10)
+dump dumpLog all custom 1 productionLog.dat id type xu yu zu vx vy vz
+dump_modify dumpLog every v_step first yes
+dump_modify dumpLog sort id
+
+run		200000
+write_data      final.data
