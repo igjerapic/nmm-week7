@@ -1,0 +1,40 @@
+# General
+*.sh
+*.lammps
+exclude-list
+*.pkl
+*.ovito
+*.svg
+
+# report
+report/out_dir/*.aux
+report/out_dir/*.fdb_latexmk
+report/out_dir/*.fls
+report/out_dir/*.log
+report/out_dir/*.out
+report/out_dir/*.synctex.gz
+report/out_dir/*.toc
+report/out_dir/*.b*
+report/out_dir/*.run.xml
+report/sections
+report/figs/*.svg
+
+# assignment 1
+assignment1/ELASTIC*
+assignment1/*.png
+assignment1/create*
+
+
+
+# assignment 2
+assignment2/create*
+assignment2/*.tex
+assignment2/crack/
+assignment2/crack_pull*
+assignment2/*.png
+
+
+
+# assignment 3
+assignment3/*.png 
+
